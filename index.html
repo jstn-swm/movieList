@@ -4,24 +4,314 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movie List</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="js/app.js"></script>
   </head>
-  <link rel="stylesheet" href="style.css" />
   <body>
-    <h1>Selener & Penar's Movie List</h1>
-    <ul>
-      <li><input type="checkbox" checked />Burnt</li>
-      <li>
-        <input type="checkbox" />Limitless
-        <ul>
-          <li>
-            <input type="checkbox" />Maybe the TV-Series that got abolished too
-          </li>
+    <!-- Header -->
+    <header>
+      <div class="container">
+        <h1>Movie List</h1>
+        <div class="header-actions">
+          <!-- Auth buttons - shown when logged out -->
+          <div id="authButtons">
+            <button id="showLoginButton" class="button small">Log In</button>
+            <button id="showRegisterButton" class="button small secondary">
+              Register
+            </button>
+          </div>
+
+          <!-- User info - shown when logged in -->
+          <div id="headerUserInfo" style="display: none">
+            <span class="username-display"
+              >Welcome, <span class="user-username"></span
+            ></span>
+            <button id="headerLogoutButton" class="button small">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification">
+      <span id="notificationMessage">Message goes here</span>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading">
+      <div class="loading-spinner"></div>
+      <div id="loadingMessage">Loading...</div>
+    </div>
+
+    <!-- Unauthenticated Content - Hidden by default -->
+    <div
+      id="unauthenticatedContent"
+      class="container auth-container"
+      style="display: none"
+    >
+      <div class="auth-welcome">
+        <h2>Welcome to Movie List</h2>
+        <p>Track your favorite movies and manage your watchlist.</p>
+        <div class="auth-buttons">
+          <button id="showLoginButton2" class="button primary">Log In</button>
+          <button id="showRegisterButton2" class="button secondary">
+            Register
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Authenticated Content - Shown by default -->
+    <div id="authenticatedContent" class="container">
+      <!-- Old user-info section with logout button removed -->
+
+      <section class="movies-section">
+        <div class="movies-header">
+          <h2>Movies</h2>
+          <div class="movies-actions">
+            <button id="showAddMovieButton" class="button primary">Add</button>
+            <select id="filterOptions" class="filter-select">
+              <option value="all">All Movies</option>
+              <option value="watched">Watched</option>
+              <option value="unwatched">Unwatched</option>
+            </select>
+          </div>
+        </div>
+
+        <ul id="moviesList" class="movies-list">
+          <!-- Movies will be inserted here dynamically -->
+          <div class="empty-state">Loading movies...</div>
         </ul>
-      </li>
-      <li><input type="checkbox" checked />We're The Millers</li>
-      <li><input type="checkbox" />Nanny Diaries</li>
-      <li><input type="checkbox" />Warm Bodies</li>
-      <li><input type="checkbox" />Hacksaw Bridge</li>
-    </ul>
+      </section>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Log In</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" required />
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" required />
+          </div>
+
+          <button type="submit" class="button primary">Log In</button>
+        </form>
+
+        <div class="modal-footer">
+          <p>
+            Don't have an account?
+            <button id="showRegisterButton2" class="text-button">
+              Register
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create Account</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="registerEmail">Email</label>
+            <input type="email" id="registerEmail" required />
+          </div>
+
+          <div class="form-group">
+            <label for="registerPassword">Password</label>
+            <input
+              type="password"
+              id="registerPassword"
+              required
+              minlength="6"
+            />
+            <small>Minimum 6 characters</small>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              required
+              minlength="6"
+            />
+          </div>
+
+          <button type="submit" class="button primary">Register</button>
+        </form>
+
+        <div class="modal-footer">
+          <p>
+            Already have an account?
+            <button id="showLoginButton2" class="text-button">Log In</button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>API Settings</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="supabaseUrl">Supabase URL</label>
+            <input
+              type="text"
+              id="supabaseUrl"
+              placeholder="https://your-project.supabase.co"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="supabaseKey">Supabase Anon Key</label>
+            <input
+              type="password"
+              id="supabaseKey"
+              placeholder="your-supabase-anon-key"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="omdbApiKey">OMDB API Key</label>
+            <input
+              type="text"
+              id="omdbApiKey"
+              placeholder="your-omdb-api-key"
+            />
+          </div>
+
+          <button type="submit" class="button primary">Save Settings</button>
+        </form>
+
+        <div class="form-help">
+          <details>
+            <summary>Where to find these keys?</summary>
+            <div>
+              <h4>Supabase Setup</h4>
+              <ol>
+                <li>
+                  Create an account at
+                  <a href="https://supabase.com" target="_blank"
+                    >supabase.com</a
+                  >
+                </li>
+                <li>Create a new project</li>
+                <li>
+                  Go to Project Settings > API to find your URL and anon key
+                </li>
+                <li>
+                  Create a new table called "movies" with the following columns:
+                  <ul>
+                    <li>id (uuid, primary key)</li>
+                    <li>user_id (text)</li>
+                    <li>title (text, required)</li>
+                    <li>description (text)</li>
+                    <li>year (text)</li>
+                    <li>watched (boolean, default: false)</li>
+                    <li>poster_url (text)</li>
+                    <li>
+                      created_at (timestamp with time zone, default: now())
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  Set up Row Level Security (RLS) to ensure users can only
+                  access their own data
+                </li>
+              </ol>
+
+              <h4>OMDB API Setup</h4>
+              <ol>
+                <li>
+                  Get a free API key at
+                  <a href="https://www.omdbapi.com/apikey.aspx" target="_blank"
+                    >omdbapi.com</a
+                  >
+                </li>
+                <li>Paste your key in the field above</li>
+              </ol>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Movie Modal -->
+    <div id="addMovieModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Movie</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+
+        <form id="addMovieForm" class="add-movie-form">
+          <div class="form-group">
+            <label for="movieTitle">Title *</label>
+            <input
+              type="text"
+              id="movieTitle"
+              required
+              placeholder="Movie title"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="movieYear">Year</label>
+            <input
+              type="number"
+              id="movieYear"
+              placeholder="Year of release"
+              min="1900"
+              max="2099"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="movieDescription"
+              >Description
+              <small>(Optional - will be fetched automatically)</small></label
+            >
+            <textarea
+              id="movieDescription"
+              placeholder="Override the auto-fetched description if needed"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="button primary">Add Movie</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Default Poster Image -->
+    <div style="display: none">
+      <img
+        id="defaultPoster"
+        src="public/default-poster.jpg"
+        alt="Default movie poster"
+      />
+    </div>
   </body>
 </html>
