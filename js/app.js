@@ -236,7 +236,7 @@ async function loadMovies() {
       <div class="movie-poster">
         <img src="${movie.poster_url}" alt="${
       movie.title
-    } poster" onerror="this.src='/public/default-poster.jpg'">
+    } poster" onerror="this.src='./public/default-poster.jpg'">
       </div>
       <div class="movie-details">
         <h3 class="movie-title">${movie.title} ${

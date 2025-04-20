@@ -56,7 +56,7 @@ export async function getMovies(filter = "all") {
 
 export async function addMovie(title, description = "", year = "") {
   // Modified to not require authentication
-  let posterUrl = "/public/default-poster.jpg"; // Default poster
+  let posterUrl = "./public/default-poster.jpg"; // Default poster with relative path
   let omdbDescription = ""; // Variable to store OMDB description
 
   // Fixed OMDB API key - using the provided key
