@@ -143,6 +143,30 @@ header .container {
   gap: 12px;
 }
 
+#headerUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.username-display {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.user-email {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+#authButtons {
+  display: flex;
+  gap: 10px;
+}
+
 /* Improved Button Styles */
 .button,
 button {

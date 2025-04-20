@@ -277,16 +277,26 @@ function showAuthenticatedUI() {
   );
   const authenticatedContent = document.getElementById("authenticatedContent");
   const addMovieSection = document.querySelector(".add-movie-section");
-  const userInfo = document.querySelector(".user-info");
+
+  // Handle the header login/logout UI
+  const authButtons = document.getElementById("authButtons");
+  const headerUserInfo = document.getElementById("headerUserInfo");
 
   if (unauthenticatedContent) unauthenticatedContent.style.display = "none";
   if (authenticatedContent) authenticatedContent.style.display = "block";
   if (addMovieSection) addMovieSection.style.display = "block";
-  if (userInfo) userInfo.style.display = "block";
 
-  const userEmail = document.querySelector(".user-email");
-  if (userEmail && currentUser) {
-    userEmail.textContent = currentUser.email;
+  // Hide login buttons, show user info with logout
+  if (authButtons) authButtons.style.display = "none";
+  if (headerUserInfo) headerUserInfo.style.display = "flex";
+
+  // Update user email display in the header - extract just the username part
+  const userEmailElement = document.querySelector(".user-email");
+  if (userEmailElement && currentUser) {
+    // Extract username from email (part before the @ symbol)
+    const emailParts = currentUser.email.split("@");
+    const username = emailParts[0];
+    userEmailElement.textContent = username;
   }
 }
 
@@ -295,14 +305,19 @@ function showPublicUI() {
     "unauthenticatedContent"
   );
   const authenticatedContent = document.getElementById("authenticatedContent");
-  const userInfo = document.querySelector(".user-info");
   const addMovieSection = document.querySelector(".add-movie-section");
+
+  // Handle the header login/logout UI
+  const authButtons = document.getElementById("authButtons");
+  const headerUserInfo = document.getElementById("headerUserInfo");
 
   if (unauthenticatedContent) unauthenticatedContent.style.display = "none";
   if (authenticatedContent) authenticatedContent.style.display = "block";
-
-  if (userInfo) userInfo.style.display = "none";
   if (addMovieSection) addMovieSection.style.display = "none";
+
+  // Show login buttons, hide user info with logout
+  if (authButtons) authButtons.style.display = "flex";
+  if (headerUserInfo) headerUserInfo.style.display = "none";
 }
 
 /* UI Helpers */
