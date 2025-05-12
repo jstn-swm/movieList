@@ -36,26 +36,44 @@ export async function getCurrentUser() {
 }
 
 // ===== Movie database functions =====
-export async function getMovies(filter = "all") {
-  // Modified to not require authentication
+export async function getMovies(filter = "all", userId = null) {
   let query = supabase
     .from("movies")
     .select("*")
     .order("created_at", { ascending: false });
+
+  // If userId is provided, fetch only that user's movies or recommendations for all
+  if (userId) {
+    query = query.or(`user_id.eq.${userId},is_recommendation.eq.true`);
+  } else {
+    // Only show public/recommended movies when not logged in
+    query = query.eq("is_recommendation", true);
+  }
 
   // Apply filter if specified
   if (filter === "watched") {
     query = query.eq("watched", true);
   } else if (filter === "unwatched") {
     query = query.eq("watched", false);
+  } else if (filter === "my-movies") {
+    // Only show the user's own movies
+    query = query.eq("user_id", userId);
+  } else if (filter === "recommendations") {
+    // Only show recommendations
+    query = query.eq("is_recommendation", true);
   }
 
   const { data, error } = await query;
   return { data, error };
 }
 
-export async function addMovie(title, description = "", year = "") {
-  // Modified to not require authentication
+export async function addMovie(
+  title,
+  description = "",
+  year = "",
+  userId = null,
+  isRecommendation = false
+) {
   let posterUrl = "./public/default-poster.jpg"; // Default poster with relative path
   let omdbDescription = ""; // Variable to store OMDB description
 
@@ -94,17 +112,18 @@ export async function addMovie(title, description = "", year = "") {
   // Use OMDB description if available, otherwise use the provided description
   const finalDescription = omdbDescription || description;
 
-  // Add movie to database without requiring user authentication
+  // Add movie to database with user ID if authenticated
   const { data, error } = await supabase
     .from("movies")
     .insert([
       {
-        user_id: "public", // Use a fixed value for public movies
+        user_id: userId || "public",
         title,
         description: finalDescription,
         year: year || null,
         watched: false,
         poster_url: posterUrl,
+        is_recommendation: isRecommendation,
       },
     ])
     .select();
@@ -112,23 +131,56 @@ export async function addMovie(title, description = "", year = "") {
   return { data, error };
 }
 
-export async function toggleWatchedStatus(movieId, watched) {
-  // Modified to not require authentication
-  const { data, error } = await supabase
-    .from("movies")
-    .update({ watched })
-    .eq("id", movieId)
-    .select();
+export async function toggleWatchedStatus(movieId, watched, userId = null) {
+  let query = supabase.from("movies").update({ watched }).eq("id", movieId);
 
+  // Add user constraint if userId is provided
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.select();
   return { data, error };
 }
 
-export async function deleteMovie(movieId) {
-  // Modified to not require authentication
-  const { data, error } = await supabase
+export async function deleteMovie(movieId, userId = null) {
+  let query = supabase.from("movies").delete().eq("id", movieId);
+
+  // Add user constraint if userId is provided
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
+  return { data, error };
+}
+
+export async function recommendMovie(movieId, userId = null) {
+  let query = supabase
     .from("movies")
-    .delete()
+    .update({ is_recommendation: true })
     .eq("id", movieId);
 
+  // Add user constraint if userId is provided
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.select();
+  return { data, error };
+}
+
+export async function unrecommendMovie(movieId, userId = null) {
+  let query = supabase
+    .from("movies")
+    .update({ is_recommendation: false })
+    .eq("id", movieId);
+
+  // Add user constraint if userId is provided
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.select();
   return { data, error };
 }

@@ -6,13 +6,14 @@ A sleek, modern web application for tracking your movie watchlist with automatic
 
 ## 🎬 Features
 
-- **Movie Collection**: Easily manage and track your movie watchlist
+- **Private Movie Lists**: Keep your movie collection private to your account
+- **Movie Recommendations**: Share and recommend movies with other users
 - **Auto-fetching Movie Details**: Automatically pulls movie information from OMDB API
 - **Movie Posters**: Displays movie posters for visual reference
 - **Watch Status Tracking**: Mark movies as watched/unwatched
 - **Modern UI**: Clean, responsive design with themed scrollbars
-- **Filtering**: Sort movies by watch status (all/watched/unwatched)
-- **User Authentication**: Secure login and registration system
+- **Enhanced Filtering**: Sort movies by watch status, personal movies, or recommendations
+- **User Authentication**: Secure login and registration system with username display
 
 ## 🚀 Technologies
 
@@ -28,12 +29,20 @@ A sleek, modern web application for tracking your movie watchlist with automatic
 
    - Movie information and poster will be fetched automatically from OMDB
    - You can override the description if needed
+   - Check "Recommend this movie to everyone" to share it with all users
 
 2. **Track Watch Status**: Toggle the "Watched" checkbox for each movie
 
-3. **Filter Movies**: Use the dropdown to filter by watch status
+3. **Filter Movies**: Use the dropdown to filter by:
 
-4. **Delete Movies**: Remove unwanted movies from your list
+   - All Movies (includes your movies and recommendations)
+   - My Movies (only your private movies)
+   - Recommendations (only recommended movies)
+   - Watched/Unwatched status
+
+4. **Recommend Movies**: Click "Recommend" on any of your movies to share them with everyone
+
+5. **Delete Movies**: Remove unwanted movies from your list (only for your own movies)
 
 ## 🎨 Customization
 
@@ -47,9 +56,10 @@ You can customize the application by modifying:
 
 - Movie ratings and reviews
 - Advanced filtering and sorting options
-- Movie recommendations
-- Social sharing features
+- Comment system for movie recommendations
+- Direct sharing to social media platforms
 - Dark/light theme toggle
+- User profile customization
 
 ---
 

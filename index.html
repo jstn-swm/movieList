@@ -72,6 +72,8 @@
             <button id="showAddMovieButton" class="button primary">Add</button>
             <select id="filterOptions" class="filter-select">
               <option value="all">All Movies</option>
+              <option value="my-movies">My Movies</option>
+              <option value="recommendations">Recommendations</option>
               <option value="watched">Watched</option>
               <option value="unwatched">Unwatched</option>
             </select>
@@ -230,6 +232,7 @@
                     <li>year (text)</li>
                     <li>watched (boolean, default: false)</li>
                     <li>poster_url (text)</li>
+                    <li>is_recommendation (boolean, default: false)</li>
                     <li>
                       created_at (timestamp with time zone, default: now())
                     </li>
@@ -296,6 +299,13 @@
               id="movieDescription"
               placeholder="Override the auto-fetched description if needed"
             ></textarea>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label for="recommendMovie">
+              <input type="checkbox" id="recommendMovie" />
+              Recommend this movie to everyone
+            </label>
           </div>
 
           <button type="submit" class="button primary">Add Movie</button>

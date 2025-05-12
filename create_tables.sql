@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS movies (
   year TEXT,
   watched BOOLEAN DEFAULT FALSE,
   poster_url TEXT,
+  is_recommendation BOOLEAN DEFAULT FALSE, -- Flag to mark movies recommended to everyone
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -29,9 +30,9 @@ EXECUTE FUNCTION update_updated_at();
 -- Enable Row Level Security on the movies table
 ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
 
--- Create policy for users to see only their own movies
-CREATE POLICY "Users can only view their own movies" 
-  ON movies FOR SELECT USING (auth.uid()::text = user_id);
+-- Create policy for users to see their own movies and recommendations from others
+CREATE POLICY "Users can view their own movies and recommendations" 
+  ON movies FOR SELECT USING (auth.uid()::text = user_id OR is_recommendation = true);
 
 -- Create policy for users to insert their own movies
 CREATE POLICY "Users can insert their own movies" 
@@ -45,7 +46,6 @@ CREATE POLICY "Users can update their own movies"
 CREATE POLICY "Users can delete their own movies" 
   ON movies FOR DELETE USING (auth.uid()::text = user_id);
 
--- Allow public access for the demo app (optional)
--- This allows accessing movies with user_id = 'public'
-CREATE POLICY "Allow public access to public movies" 
-  ON movies FOR ALL USING (user_id = 'public');
+-- Allow anonymous users to view recommended movies
+CREATE POLICY "Allow anonymous access to recommended movies" 
+  ON movies FOR SELECT TO anon USING (is_recommendation = true);

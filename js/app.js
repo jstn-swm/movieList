@@ -139,6 +139,7 @@ async function handleAddMovie(event) {
   const title = document.getElementById("movieTitle").value.trim();
   const year = document.getElementById("movieYear").value.trim();
   const description = document.getElementById("movieDescription").value.trim();
+  const isRecommendation = document.getElementById("recommendMovie").checked;
 
   if (!title) {
     showNotification("Movie title is required", "error");
@@ -147,7 +148,21 @@ async function handleAddMovie(event) {
 
   showLoading("Adding movie...");
 
-  const { data, error } = await supabase.addMovie(title, description, year);
+  // Pass the current user's ID if authenticated
+  const userId = currentUser ? currentUser.id : null;
+  if (!userId) {
+    showNotification("You must be logged in to add movies", "error");
+    hideLoading();
+    return;
+  }
+
+  const { data, error } = await supabase.addMovie(
+    title,
+    description,
+    year,
+    userId,
+    isRecommendation
+  );
 
   hideLoading();
 
@@ -159,7 +174,11 @@ async function handleAddMovie(event) {
     document.getElementById("addMovieForm").reset();
     hideModal("addMovieModal");
     loadMovies();
-    showNotification("Movie added successfully!", "success");
+
+    const successMessage = isRecommendation
+      ? "Movie added and recommended to everyone!"
+      : "Movie added successfully!";
+    showNotification(successMessage, "success");
   }
 }
 
@@ -168,7 +187,10 @@ async function handleDeleteMovie(movieId) {
 
   showLoading("Deleting movie...");
 
-  const { error } = await supabase.deleteMovie(movieId);
+  // Only allow users to delete their own movies
+  const userId = currentUser ? currentUser.id : null;
+
+  const { error } = await supabase.deleteMovie(movieId, userId);
 
   hideLoading();
 
@@ -185,7 +207,14 @@ async function handleDeleteMovie(movieId) {
 async function handleToggleWatched(movieId, isWatched) {
   const newStatus = !isWatched;
 
-  const { error } = await supabase.toggleWatchedStatus(movieId, newStatus);
+  // Pass the current user's ID to only update their own movies
+  const userId = currentUser ? currentUser.id : null;
+
+  const { error } = await supabase.toggleWatchedStatus(
+    movieId,
+    newStatus,
+    userId
+  );
 
   if (error) {
     const errorMessage =
@@ -193,6 +222,45 @@ async function handleToggleWatched(movieId, isWatched) {
     showNotification("Failed to update status: " + errorMessage, "error");
   } else {
     loadMovies();
+  }
+}
+
+async function handleToggleRecommendation(movieId, isRecommendation) {
+  const userId = currentUser ? currentUser.id : null;
+
+  if (!userId) {
+    showNotification("You must be logged in to recommend movies", "error");
+    return;
+  }
+
+  showLoading(
+    isRecommendation ? "Removing recommendation..." : "Recommending movie..."
+  );
+
+  let error;
+  if (isRecommendation) {
+    const result = await supabase.unrecommendMovie(movieId, userId);
+    error = result.error;
+  } else {
+    const result = await supabase.recommendMovie(movieId, userId);
+    error = result.error;
+  }
+
+  hideLoading();
+
+  if (error) {
+    const errorMessage =
+      error.message || JSON.stringify(error) || "Unknown error";
+    showNotification(
+      "Failed to update recommendation: " + errorMessage,
+      "error"
+    );
+  } else {
+    loadMovies();
+    const message = isRecommendation
+      ? "Movie is no longer recommended to everyone"
+      : "Movie is now recommended to everyone!";
+    showNotification(message, "success");
   }
 }
 
@@ -208,7 +276,9 @@ async function loadMovies() {
 
   showLoading("Loading movies...");
 
-  const { data, error } = await supabase.getMovies(currentFilter);
+  // Only fetch movies for the logged-in user or public recommendations
+  const userId = currentUser ? currentUser.id : null;
+  const { data, error } = await supabase.getMovies(currentFilter, userId);
 
   hideLoading();
 
@@ -232,7 +302,41 @@ async function loadMovies() {
     movieElement.className = "movie-item";
     movieElement.dataset.id = movie.id;
 
+    // Add recommendation badge if this is a recommended movie
+    const recommendationBadge = movie.is_recommendation
+      ? '<div class="recommendation-badge">Recommended</div>'
+      : "";
+
+    // Only show edit controls for user's own movies
+    const isUserMovie = userId && movie.user_id === userId;
+
+    // Prepare the action buttons based on ownership
+    const actionButtons = isUserMovie
+      ? `
+        <div class="movie-actions">
+          <label class="watched-toggle">
+            <input type="checkbox" ${movie.watched ? "checked" : ""}>
+            ${movie.watched ? "Watched" : "Not watched"}
+          </label>
+          <button class="recommend-button ${
+            movie.is_recommendation ? "unrecommend" : ""
+          }">
+            ${movie.is_recommendation ? "Unrecommend" : "Recommend"}
+          </button>
+          <button class="delete-button">Delete</button>
+        </div>
+      `
+      : `
+        <div class="movie-actions">
+          <label class="watched-toggle">
+            <input type="checkbox" ${movie.watched ? "checked" : ""}>
+            ${movie.watched ? "Watched" : "Not watched"}
+          </label>
+        </div>
+      `;
+
     movieElement.innerHTML = `
+      ${recommendationBadge}
       <div class="movie-poster">
         <img src="${movie.poster_url}" alt="${
       movie.title
@@ -245,27 +349,35 @@ async function loadMovies() {
         <p class="movie-description">${
           movie.description || "No description available"
         }</p>
-        <div class="movie-actions">
-          <label class="watched-toggle">
-            <input type="checkbox" ${movie.watched ? "checked" : ""}>
-            ${movie.watched ? "Watched" : "Not watched"}
-          </label>
-          <button class="delete-button">Delete</button>
-        </div>
+        ${actionButtons}
       </div>
     `;
 
+    // Add event listener for watched toggle
     movieElement
       .querySelector(".watched-toggle input")
       .addEventListener("change", () => {
         handleToggleWatched(movie.id, movie.watched);
       });
 
-    movieElement
-      .querySelector(".delete-button")
-      .addEventListener("click", () => {
-        handleDeleteMovie(movie.id);
-      });
+    // Check if it's the user's movie (reusing the variable from above)
+    if (isUserMovie) {
+      // Add event listener for delete button
+      const deleteButton = movieElement.querySelector(".delete-button");
+      if (deleteButton) {
+        deleteButton.addEventListener("click", () => {
+          handleDeleteMovie(movie.id);
+        });
+      }
+
+      // Add event listener for recommend button
+      const recommendButton = movieElement.querySelector(".recommend-button");
+      if (recommendButton) {
+        recommendButton.addEventListener("click", () => {
+          handleToggleRecommendation(movie.id, movie.is_recommendation);
+        });
+      }
+    }
 
     moviesList.appendChild(movieElement);
   });

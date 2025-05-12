@@ -42,6 +42,7 @@
   --error: #ff4757;
   --warning: #ffb300;
   --info: #2f80ed;
+  --recommendation: #6b60e6;
 }
 
 /* Base Styles */
@@ -690,4 +691,47 @@ details li {
     align-items: flex-end;
     gap: 0.5rem;
   }
+}
+
+/* Recommendation Styles */
+.recommendation-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--recommendation);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.recommend-button {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  text-transform: none;
+  background-color: rgba(107, 96, 230, 0.2);
+  color: var(--recommendation);
+  border: 1px solid var(--recommendation);
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.recommend-button:hover {
+  background-color: var(--recommendation);
+  color: white;
+}
+
+.recommend-button.unrecommend {
+  background-color: var(--recommendation);
+  color: white;
+}
+
+.recommend-button.unrecommend:hover {
+  background-color: rgba(107, 96, 230, 0.2);
+  color: var(--recommendation);
 }
