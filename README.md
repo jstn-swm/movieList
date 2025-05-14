@@ -64,4 +64,4 @@ You can customize the application by modifying:
 ---
 
 <p align="center">Designed and developed in 2025.</p>
-<p align="center"><i>This project was enhanced with assistance from Claude 3.7 Sonnet.</i></p>
+<p align="center"><i>This project aims to enhance self-learning and familiarity with AI, with valuable contributions from Claude 3.7 Sonnet</i></p>
