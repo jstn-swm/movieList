@@ -2,7 +2,7 @@
 
 A sleek, modern web application for tracking your movie watchlist with automatic movie information fetching.
 
-![Movie List App](public/default-poster.jpg)
+![Movie List App](public/default-poster.png)
 
 ## 🎬 Features
 
