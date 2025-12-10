@@ -1,23 +1,35 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
 // Use a fixed Supabase URL and key (already in the code)
 const supabaseUrl = "https://rlxizlanwveayrjkgbsx.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJseGl6bGFud3ZlYXlyamtnYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDA4ODQsImV4cCI6MjA2MDcxNjg4NH0.sArY7ytczr550iVRAL1LgmzmnZmkjH_Ht7PFPb4prA0";
 
-// Initialize Supabase client with error handling
-let supabaseClient;
-try {
-  supabaseClient = createClient(supabaseUrl, supabaseKey);
-} catch (error) {
-  console.error("Failed to initialize Supabase client:", error);
-  supabaseClient = null;
+// Initialize Supabase client with dynamic import and error handling
+let supabaseClient = null;
+let supabaseReady = false;
+
+async function initSupabase() {
+  try {
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    supabaseClient = createClient(supabaseUrl, supabaseKey);
+    supabaseReady = true;
+    return supabaseClient;
+  } catch (error) {
+    console.error("Failed to initialize Supabase client:", error);
+    supabaseReady = true;
+    return null;
+  }
 }
 
+// Wait for initialization to complete before exporting (top-level await)
+await initSupabase();
+
 export const supabase = supabaseClient;
+export const isSupabaseReady = () => supabaseReady;
+export const getSupabase = () => supabaseClient;
 
 // ===== Authentication functions =====
 export async function signUp(email, password) {
+  const supabase = getSupabase();
   if (!supabase) {
     return { data: null, error: { message: "Supabase client not initialized" } };
   }
@@ -29,6 +41,7 @@ export async function signUp(email, password) {
 }
 
 export async function signIn(email, password) {
+  const supabase = getSupabase();
   if (!supabase) {
     return { data: null, error: { message: "Supabase client not initialized" } };
   }
@@ -40,6 +53,7 @@ export async function signIn(email, password) {
 }
 
 export async function signOut() {
+  const supabase = getSupabase();
   if (!supabase) {
     return { error: { message: "Supabase client not initialized" } };
   }
@@ -48,6 +62,7 @@ export async function signOut() {
 }
 
 export async function getCurrentUser() {
+  const supabase = getSupabase();
   if (!supabase) {
     return { user: null, error: { message: "Supabase client not initialized" } };
   }
@@ -57,6 +72,10 @@ export async function getCurrentUser() {
 
 // ===== Movie database functions =====
 export async function getMovies(filter = "all", userId = null) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   let query = supabase
     .from("movies")
     .select("*")
@@ -133,6 +152,10 @@ export async function addMovie(
   const finalDescription = omdbDescription || description;
 
   // Add movie to database with user ID if authenticated
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   const { data, error } = await supabase
     .from("movies")
     .insert([
@@ -152,6 +175,10 @@ export async function addMovie(
 }
 
 export async function toggleWatchedStatus(movieId, watched, userId = null) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   let query = supabase.from("movies").update({ watched }).eq("id", movieId);
 
   // Add user constraint if userId is provided
@@ -164,6 +191,10 @@ export async function toggleWatchedStatus(movieId, watched, userId = null) {
 }
 
 export async function deleteMovie(movieId, userId = null) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   let query = supabase.from("movies").delete().eq("id", movieId);
 
   // Add user constraint if userId is provided
@@ -176,6 +207,10 @@ export async function deleteMovie(movieId, userId = null) {
 }
 
 export async function recommendMovie(movieId, userId = null) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   let query = supabase
     .from("movies")
     .update({ is_recommendation: true })
@@ -191,6 +226,10 @@ export async function recommendMovie(movieId, userId = null) {
 }
 
 export async function unrecommendMovie(movieId, userId = null) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: "Supabase client not initialized" } };
+  }
   let query = supabase
     .from("movies")
     .update({ is_recommendation: false })
