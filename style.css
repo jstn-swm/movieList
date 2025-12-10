@@ -1,4 +1,6 @@
-/* Font Face Declarations */
+/* Font Face Declarations - Disabled due to corrupted font files */
+/* Using system fonts instead */
+/*
 @font-face {
   font-family: "Aspekta";
   src: url("./font/Aspekta/Aspekta-400.ttf") format("truetype");
@@ -30,6 +32,7 @@
   font-style: normal;
   font-display: swap;
 }
+*/
 
 :root {
   --primary: pink;
