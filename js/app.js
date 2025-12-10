@@ -6,6 +6,9 @@ let currentFilter = "all";
 
 /* Application Initialization */
 document.addEventListener("DOMContentLoaded", async () => {
+  // Wait for Supabase to be initialized
+  await supabase.waitForSupabase();
+  
   await checkAuthStatus();
   setupEventListeners();
   loadMovies();

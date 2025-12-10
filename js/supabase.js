@@ -6,26 +6,38 @@ const supabaseKey =
 // Initialize Supabase client with dynamic import and error handling
 let supabaseClient = null;
 let supabaseReady = false;
+let initPromise = null;
 
 async function initSupabase() {
-  try {
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    supabaseClient = createClient(supabaseUrl, supabaseKey);
-    supabaseReady = true;
-    return supabaseClient;
-  } catch (error) {
-    console.error("Failed to initialize Supabase client:", error);
-    supabaseReady = true;
-    return null;
-  }
+  if (initPromise) return initPromise;
+  
+  initPromise = (async () => {
+    try {
+      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      if (typeof createClient === 'function') {
+        supabaseClient = createClient(supabaseUrl, supabaseKey);
+        supabaseReady = true;
+        return supabaseClient;
+      } else {
+        throw new Error("createClient is not a function");
+      }
+    } catch (error) {
+      console.error("Failed to initialize Supabase client:", error);
+      supabaseReady = true;
+      return null;
+    }
+  })();
+  
+  return initPromise;
 }
 
-// Wait for initialization to complete before exporting (top-level await)
-await initSupabase();
+// Start initialization immediately but don't wait
+initSupabase();
 
-export const supabase = supabaseClient;
+export const supabase = null; // Will be null until initialized
 export const isSupabaseReady = () => supabaseReady;
 export const getSupabase = () => supabaseClient;
+export const waitForSupabase = () => initPromise || initSupabase();
 
 // ===== Authentication functions =====
 export async function signUp(email, password) {
