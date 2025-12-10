@@ -3,26 +3,74 @@ const supabaseUrl = "https://rlxizlanwveayrjkgbsx.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJseGl6bGFud3ZlYXlyamtnYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDA4ODQsImV4cCI6MjA2MDcxNjg4NH0.sArY7ytczr550iVRAL1LgmzmnZmkjH_Ht7PFPb4prA0";
 
-// Initialize Supabase client with dynamic import and error handling
+// Initialize Supabase client with multiple CDN fallbacks
 let supabaseClient = null;
 let supabaseReady = false;
 let initPromise = null;
+
+// Try multiple CDN URLs in case one fails
+const CDN_URLS = [
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.0/+esm",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm",
+  "https://esm.sh/@supabase/supabase-js@2"
+];
 
 async function initSupabase() {
   if (initPromise) return initPromise;
   
   initPromise = (async () => {
     try {
-      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-      if (typeof createClient === 'function') {
-        supabaseClient = createClient(supabaseUrl, supabaseKey);
-        supabaseReady = true;
-        return supabaseClient;
-      } else {
-        throw new Error("createClient is not a function");
+      console.log("Starting Supabase initialization...");
+      
+      let supabaseModule = null;
+      let lastError = null;
+      
+      // Try each CDN URL
+      for (const cdnUrl of CDN_URLS) {
+        try {
+          console.log(`Attempting to load from: ${cdnUrl}`);
+          supabaseModule = await import(cdnUrl);
+          console.log("Successfully loaded from:", cdnUrl);
+          break;
+        } catch (err) {
+          console.warn(`Failed to load from ${cdnUrl}:`, err.message);
+          lastError = err;
+          continue;
+        }
       }
+      
+      if (!supabaseModule) {
+        throw lastError || new Error("Could not load Supabase from any CDN");
+      }
+      
+      console.log("Supabase module imported, available keys:", Object.keys(supabaseModule).slice(0, 5));
+      
+      // Handle both named and default exports
+      let createClient = supabaseModule.createClient;
+      if (!createClient && supabaseModule.default) {
+        createClient = supabaseModule.default.createClient || supabaseModule.default;
+      }
+      
+      if (!createClient || typeof createClient !== 'function') {
+        console.error("createClient not found or not a function. Type:", typeof createClient);
+        throw new Error("createClient function not found in Supabase module");
+      }
+      
+      console.log("Creating Supabase client with URL:", supabaseUrl);
+      supabaseClient = createClient(supabaseUrl, supabaseKey);
+      
+      if (!supabaseClient) {
+        throw new Error("createClient returned null");
+      }
+      
+      console.log("✓ Supabase client initialized successfully");
+      supabaseReady = true;
+      return supabaseClient;
     } catch (error) {
-      console.error("Failed to initialize Supabase client:", error);
+      console.error("✗ Failed to initialize Supabase client:", error.message || error);
+      if (error.stack) console.error("Stack:", error.stack);
+      
+      // Mark as ready anyway so app doesn't hang
       supabaseReady = true;
       return null;
     }
