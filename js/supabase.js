@@ -31,25 +31,33 @@ export const getSupabase = () => supabaseClient;
 export async function signUp(email, password) {
   const supabase = getSupabase();
   if (!supabase) {
-    return { data: null, error: { message: "Supabase client not initialized" } };
+    return { data: null, error: { message: "Supabase not available" } };
   }
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
-  return { data, error };
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    return { data, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
 }
 
 export async function signIn(email, password) {
   const supabase = getSupabase();
   if (!supabase) {
-    return { data: null, error: { message: "Supabase client not initialized" } };
+    return { data: null, error: { message: "Supabase not available" } };
   }
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-  return { data, error };
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { data, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
 }
 
 export async function signOut() {
@@ -202,7 +210,7 @@ export async function deleteMovie(movieId, userId = null) {
     query = query.eq("user_id", userId);
   }
 
-  const { data, error } = await query;
+  const { data, error } = await query.select();
   return { data, error };
 }
 
