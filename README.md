@@ -5,7 +5,7 @@ A sleek, modern web application for tracking your movie watchlist with automatic
 ![Movie List App](public/poster.png)
 
 ## Features to Implement
-[ ] - Switch the DB from supabase to railway
+- [ ] Switch the DB from supabase to railway
 
 ## 🎬 Features
 
